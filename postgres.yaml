@@ -1,0 +1,46 @@
+kind: "postgresql"
+apiVersion: "acid.zalan.do/v1"
+
+metadata:
+  name: "pg-mautrix"
+  namespace: "niri-bridge"
+  labels:
+    team: acid
+
+spec:
+  dockerImage: ghcr.io/unbindapp/spilo:16-latest
+  env:
+  - name: ALLOW_NOSSL
+    value: "true"
+
+  teamId: "acid"
+  postgresql:
+    version: "16"
+    parameters:
+      wal_level: replica
+  numberOfInstances: 1
+  volume:
+    size: "10Gi"
+    storageClass: "hcloud-volumes"
+
+
+  allowedSourceRanges:
+    - 0.0.0.0/0
+
+#  patroni:
+#    pg_hba:
+#      - local     all  all  trust
+#      - host      all  all  0.0.0.0/0   md5
+#      - host      all  all  ::1/128     md5
+  
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100Mi
+    limits:
+      cpu: 1500m
+      memory: 5000Mi
+
+#  clone:
+#    cluster: "pg-listmonk"
+#    timestamp: "2027-08-28T18:30:00+00:00"

@@ -1,0 +1,14 @@
+id: discord
+url: http://discord-bridge.niri-bridge:29334
+as_token: REDACTED
+hs_token: REDACTED
+sender_localpart: BEI1f7NyJNtqW7qAACHRz5ROtIfGlDvy
+rate_limited: false
+namespaces:
+    users:
+        - regex: ^@discordbot:niri-matrix\.appditto\.com$
+          exclusive: true
+        - regex: ^@discord_.*:niri-matrix\.appditto\.com$
+          exclusive: true
+de.sorunome.msc2409.push_ephemeral: true
+push_ephemeral: true

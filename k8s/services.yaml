@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: synapse
+  namespace: niri-bridge
+spec:
+  clusterIP: None
+  selector:
+    app: synapse
+  ports:
+  - name: http
+    port: 8008
+    targetPort: 8008
+  - name: federation
+    port: 8448
+    targetPort: 8008
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: synapse-lb
+  namespace: niri-bridge
+spec:
+  type: ClusterIP
+  selector:
+    app: synapse
+  ports:
+  - name: http
+    port: 8008
+    targetPort: 8008
+  - name: federation
+    port: 8448
+    targetPort: 8008
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: discord-bridge
+  namespace: niri-bridge
+spec:
+  clusterIP: None
+  selector:
+    app: discord-bridge
+  ports:
+  - name: bridge
+    port: 29334
+    targetPort: 29334
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: discord-bridge-lb
+  namespace: niri-bridge
+spec:
+  type: ClusterIP
+  selector:
+    app: discord-bridge
+  ports:
+  - name: bridge
+    port: 29334
+    targetPort: 29334

@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: synapse
+  namespace: niri-bridge
+spec:
+  serviceName: synapse
+  replicas: 1
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: synapse
+  template:
+    metadata:
+      labels:
+        app: synapse
+    spec:
+      securityContext:
+        fsGroup: 991
+        runAsUser: 991
+        runAsGroup: 991
+      containers:
+      - name: synapse
+        image: matrixdotorg/synapse:latest
+        ports:
+        - containerPort: 8008
+          name: http
+        - containerPort: 8448
+          name: federation
+        volumeMounts:
+        - name: synapse-data
+          mountPath: /data
+        - name: config
+          mountPath: /data/homeserver.yaml
+          subPath: homeserver.yaml
+        - name: config
+          mountPath: /data/log.config
+          subPath: log.config
+        - name: signing-key
+          mountPath: /data/signing.key
+          subPath: signing.key
+        - name: registration
+          mountPath: /appservices
+        env:
+        - name: SYNAPSE_CONFIG_PATH
+          value: "/data/homeserver.yaml"
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8008
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8008
+          initialDelaySeconds: 10
+          periodSeconds: 10
+      volumes:
+      - name: config
+        configMap:
+          name: synapse-config
+      - name: signing-key
+        secret:
+          secretName: synapse-signing-key
+      - name: registration
+        configMap:
+          name: discord-registration
+  volumeClaimTemplates:
+  - metadata:
+      name: synapse-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: hcloud-volumes
+      resources:
+        requests:
+          storage: 20Gi

@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: synapse-config
+  namespace: niri-bridge
+data:
+  homeserver.yaml: |
+    server_name: "niri-matrix.appditto.com"
+    public_baseurl: "https://niri-matrix.appditto.com"
+    
+    listeners:
+      - port: 8008
+        tls: false
+        type: http
+        x_forwarded: true
+        bind_addresses: ['0.0.0.0']
+        resources:
+          - names: [client, federation]
+            compress: false
+    
+    database:
+      name: psycopg2
+      args:
+        user: mautrix
+        password: REDACTED
+        database: synapse
+        host: pg-mautrix.niri-bridge
+        port: 5432
+    
+    media_store_path: /data/media
+    max_upload_size: "100M"
+    
+    signing_key_path: /data/signing.key
+    
+    trusted_key_servers:
+      - server_name: "matrix.org"
+    
+    app_service_config_files:
+      - /appservices/registration.yaml
+    
+    enable_registration: false  # Set false after creating admin
+    registration_shared_secret: "REDACTED"
+    
+    report_stats: false
+    
+  log.config: |
+    version: 1
+    formatters:
+      precise:
+        format: '%(asctime)s - %(name)s - %(lineno)d - %(levelname)s - %(request)s - %(message)s'
+    handlers:
+      console:
+        class: logging.StreamHandler
+        formatter: precise
+    root:
+      level: INFO
+      handlers: [console]

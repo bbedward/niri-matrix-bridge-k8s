@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: discord-bridge
+  namespace: niri-bridge
+spec:
+  serviceName: discord-bridge
+  replicas: 1
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: discord-bridge
+  template:
+    metadata:
+      labels:
+        app: discord-bridge
+    spec:
+      containers:
+      - name: mautrix-discord
+        image: dock.mau.dev/mautrix/discord:latest
+        ports:
+        - containerPort: 29334
+          name: bridge
+        volumeMounts:
+        - name: discord-data
+          mountPath: /data
+        - name: config
+          mountPath: /data/config.yaml
+          subPath: config.yaml
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          tcpSocket:
+            port: 29334
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          tcpSocket:
+            port: 29334
+          initialDelaySeconds: 10
+          periodSeconds: 10
+      volumes:
+      - name: config
+        configMap:
+          name: discord-config
+  volumeClaimTemplates:
+  - metadata:
+      name: discord-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: hcloud-volumes
+      resources:
+        requests:
+          storage: 10Gi
